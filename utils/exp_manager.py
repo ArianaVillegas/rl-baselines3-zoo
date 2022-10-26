@@ -181,6 +181,17 @@ class ExperimentManager:
         n_envs = 1 if self.algo == "ars" or self.optimize_hyperparameters else self.n_envs
         env = self.create_envs(n_envs, no_log=False)
 
+        # Print Observation Space details -----------------------
+        print("** Observation Space Details **")
+        print("Observation Space--\n" +str(env.observation_space))
+        print("Observation Space high:" +str(env.observation_space.high))
+        print("Observation Space low:" +str(env.observation_space.low))
+
+
+        # Print Action Space space detail ------------------------
+        print("** Action Space Details **")
+        print("Action Space--\n"+str(env.action_space))
+
         self._hyperparams = self._preprocess_action_noise(hyperparams, saved_hyperparams, env)
 
         if self.continue_training:
