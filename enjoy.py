@@ -80,21 +80,21 @@ def main():  # noqa: C901
     final_reward = []
     final_std = []
     final_values = []
-    name = 'bipedal_mirror.txt'
-    for i in range(101, 111):
+    name = 'car_racing_no_mirror.txt'
+    for i in range(1, 2):
         global_reward = []
         global_std = []
         global_values = []
         with open(name, "a") as f:
             f.write(f'======== Agent {i} ========\n')
-        for j in range(1, 11):
-            args.load_checkpoint = 500000*j
-            args.seed = i
+        for j in range(1, 2):
+            # args.load_checkpoint = 500000*j
+            args.seed = j
+            args.exp_id = i
             print(f'======== Agent {i} Checkpoint {500000*j} ========')
             try:
                 _, model_path, log_path = get_model_path(
-                    # args.exp_id,
-                    i,
+                    args.exp_id,
                     folder,
                     algo,
                     env_name,
@@ -115,7 +115,8 @@ def main():  # noqa: C901
                         env_name=env_name,
                         exp_id=args.exp_id,
                         folder=folder,
-                        organization="sb3",
+                        # organization="sb3",
+                        organization="meln1k",
                         repo_name=None,
                         force=False,
                     )
@@ -214,55 +215,63 @@ def main():  # noqa: C901
             successes = []
             lstm_states = None
             episode_start = np.ones((env.num_envs,), dtype=bool)
+            cnt = 0
             try:
-                while len(episode_rewards) < args.n_timesteps:
+                while len(episode_rewards) < args.n_timesteps and cnt < 5:
                     action, lstm_states = model.predict(
                         obs,
                         state=lstm_states,
                         episode_start=episode_start,
                         deterministic=deterministic,
                     )
+                    # print(obs)
+                    # print(obs.shape)
+                    # print(len(episode_rewards))
+                    # cnt+=1
 
                     # Bipedal
-                    mask = np.array([-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1])
-                    mirror_obs = obs * mask
+                    # mask = np.array([-1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1])
+                    # mirror_obs = obs * mask
                     # temp = np.array(mirror_obs[0][9:14], copy=True)
                     # mirror_obs[0][9:14] = mirror_obs[0][4:9]
                     # mirror_obs[0][4:9] = temp
 
-                    mirror_obs2 = np.array(obs, copy=True)
-                    temp = np.array(mirror_obs2[0][9:14], copy=True)
-                    mirror_obs2[0][9:14] = mirror_obs2[0][4:9]
-                    mirror_obs2[0][4:9] = temp
+                    # mirror_obs2 = np.array(obs, copy=True)
+                    # temp = np.array(mirror_obs2[0][9:14], copy=True)
+                    # mirror_obs2[0][9:14] = mirror_obs2[0][4:9]
+                    # mirror_obs2[0][4:9] = temp
                     
-                    val_obs = model.forward(obs)
-                    val_mirror_obs = model.forward(mirror_obs)
-                    val_mirror_obs2 = model.forward(mirror_obs2)
-                    if val_obs < val_mirror_obs and val_mirror_obs2 < val_mirror_obs:
-                        action, lstm_states = model.predict(
-                            mirror_obs,
-                            state=lstm_states,
-                            episode_start=episode_start,
-                            deterministic=deterministic,
-                        )
-                        action = np.array(action) * -1
-                        # temp = np.array(action[0][2:4], copy=True)
-                        # action[0][2:4] = action[0][0:2]
-                        # action[0][0:2] = temp
-                        value += val_mirror_obs.detach().numpy()
-                    elif val_obs < val_mirror_obs2:
-                        action, lstm_states = model.predict(
-                            mirror_obs2,
-                            state=lstm_states,
-                            episode_start=episode_start,
-                            deterministic=deterministic,
-                        )
-                        temp = np.array(action[0][2:4], copy=True)
-                        action[0][2:4] = action[0][0:2]
-                        action[0][0:2] = temp
-                    else:
-                        value += val_obs.detach().numpy()
+                    # val_obs = model.forward(obs)
+                    # val_mirror_obs = model.forward(mirror_obs)
+                    # val_mirror_obs2 = model.forward(mirror_obs2)
+                    # if val_obs < val_mirror_obs and val_mirror_obs2 < val_mirror_obs:
+                    #     action, lstm_states = model.predict(
+                    #         mirror_obs,
+                    #         state=lstm_states,
+                    #         episode_start=episode_start,
+                    #         deterministic=deterministic,
+                    #     )
+                    #     action = np.array(action) * -1
+                    #     # temp = np.array(action[0][2:4], copy=True)
+                    #     # action[0][2:4] = action[0][0:2]
+                    #     # action[0][0:2] = temp
+                    #     value += val_mirror_obs.detach().numpy()
+                    # elif val_obs < val_mirror_obs2:
+                    #     action, lstm_states = model.predict(
+                    #         mirror_obs2,
+                    #         state=lstm_states,
+                    #         episode_start=episode_start,
+                    #         deterministic=deterministic,
+                    #     )
+                    #     temp = np.array(action[0][2:4], copy=True)
+                    #     action[0][2:4] = action[0][0:2]
+                    #     action[0][0:2] = temp
+                    # else:
+                    #     value += val_obs.detach().numpy()
                     
+                    # val_obs = model.forward(obs)
+                    # value += val_obs.detach().numpy()
+                    print(action)
 
                     obs, reward, done, infos = env.step(action)
 
